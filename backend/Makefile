@@ -39,6 +39,3 @@ build-gcp:
 # First builds the application in a gcloud container and then runs it using Google Cloud Run
 deploy-gcp-run: build-gcp
 	gcloud run deploy inter-maps-backend --port 8080 --image europe-west1-docker.pkg.dev/aerospacelab-interactive-maps/inter-maps-backend/inter-maps-backend:latest --allow-unauthenticated --network aerospacelab-interactive-maps --subnet aerospacelab-interactive-maps --vpc-egress private-ranges-only
-
-# deploy-gcp-app:
-# 	gcloud app deploy --image-url=europe-west1-docker.pkg.dev/papa-403821/papa-backend/papa-backend:latest

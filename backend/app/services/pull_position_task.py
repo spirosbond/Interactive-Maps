@@ -1,16 +1,27 @@
 import time
+from typing import Dict, Tuple
 from app.db import SatellitesCRUD, LocationsCRUD
 import requests
 from app.config import app_config
 
 
-def main():
+def main() -> Tuple[Dict, int]:
+    """
+    Function that pulls the iss location from the provided API. This is built in
+    a way to be compatible with background tasks, services or cloud functions.
+    Look at app_config.yaml for how it is defined and configured
+
+    :returns:   Location that was pulled
+    :rtype:     dict
+    :returns:   The http status code of the request
+    :rtype:     int
+    """
     # Retrieve the iss satellite from the database
     iss = SatellitesCRUD.find_one({"sat_id": app_config.app_iss_id})
 
     if iss is None:
         print("ISS Satellite not found. Skipping...")
-        return None
+        return {}, 0
     # Define the API URL
     url = f"{app_config.app_apis_sat_loc_url}{iss['sat_id']}?units={iss['units']}"
 
@@ -30,7 +41,7 @@ def main():
 
         # Store the new Location
         location = LocationsCRUD.create(loc)
-        return location
+        return location, response.status_code
     else:
         print(f"Failed to fetch data. Status code: {response.status_code}")
-        return None
+        return {}, response.status_code

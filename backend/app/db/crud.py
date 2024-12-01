@@ -6,6 +6,11 @@ from pymongo.errors import PyMongoError
 
 
 class CRUD:
+    """
+    This class implements the needed CRUD functions and manages all potential Exceptions.
+    By having this class we avoid the need of repeating the same code in every router and we enable better unittesting
+    """
+
     def __init__(
         self,
         collection: Collection,
@@ -56,14 +61,14 @@ class CRUD:
         if not isinstance(document_id, str):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Document ID must be a string.",
+                detail=f"Document ID must be a string. Received {document_id}",
             )
         try:
             return ObjectId(document_id)
-        except Exception:
+        except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid ObjectId: {document_id}",
+                detail=f"Invalid ObjectId: {document_id}. Error: {e}",
             )
 
     def create(self, data: Dict) -> Dict:
@@ -75,7 +80,7 @@ class CRUD:
         if not isinstance(data, dict) or not data:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Data must be a non-empty dictionary.",
+                detail=f"Data must be a non-empty dictionary. Received {data}",
             )
 
         if self.reference_field in data.keys():
@@ -102,13 +107,14 @@ class CRUD:
             document = self.collection.find_one({"_id": object_id})
             if not document:
                 raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND, detail="Document not found."
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Document with id {document_id} not found.",
                 )
             return document
         except PyMongoError as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Database error: {str(e)}",
+                detail=f"Database error trying to process document with id {document_id}: {str(e)}",
             )
 
     def update(self, document_id: str, update_data: Dict) -> Optional[Dict]:
@@ -122,24 +128,45 @@ class CRUD:
         if not isinstance(update_data, dict) or not update_data:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Update data must be a non-empty dictionary.",
+                detail=f"Update data must be a non-empty dictionary. Received {update_data}",
             )
         if self.reference_field in update_data.keys():
             self._validate_reference(update_data)
         try:
+            original_document = self.read(document_id)
             result = self.collection.find_one_and_update(
                 {"_id": object_id}, {"$set": update_data}, return_document=True
             )
             if not result:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Document not found for update.",
+                    detail=f"Document with id {document_id} not found for update.",
                 )
+            # Cascade update if a cascaded collection exists and the cascaded_field was changed
+            if (
+                self.cascaded_collection is not None
+                and self.cascaded_field is not None
+                and self.cascaded_field in update_data.keys()
+            ):
+                cascade_value = result.get(self.cascaded_field)
+                if cascade_value is not None and original_document is not None:
+                    # Update all cascade collections with the new cascade value
+                    updated_related = self.cascaded_collection.update_many(
+                        {
+                            self.cascaded_field: original_document.get(
+                                self.cascaded_field
+                            )
+                        },
+                        {"$set": {self.cascaded_field: cascade_value}},
+                    )
+                    print(
+                        f"Cascaded update: {updated_related.modified_count} related documents updated."
+                    )
             return result
         except PyMongoError as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Database error: {str(e)}",
+                detail=f"Database error trying to process document with id {document_id}: {str(e)}",
             )
 
     def delete(self, document_id: str) -> Tuple[bool, Dict[str, Any]]:
@@ -155,9 +182,9 @@ class CRUD:
             if result is None:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Document not found for deletion.",
+                    detail=f"Document with id {document_id} not found for deletion.",
                 )
-            # Cascade deletion if a related collection exists
+            # Cascade deletion if a cascaded collection exists
             if self.cascaded_collection is not None and self.cascaded_field is not None:
                 ref_value = result.get(self.cascaded_field)
                 if ref_value is not None:
@@ -172,7 +199,7 @@ class CRUD:
         except PyMongoError as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Database error: {str(e)}",
+                detail=f"Database error trying to process document with id {document_id}: {str(e)}",
             )
 
     def find(
@@ -188,17 +215,17 @@ class CRUD:
         if not isinstance(filters, dict):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Filters must be a dictionary.",
+                detail=f"Filters must be a dictionary. Received: {filters}",
             )
         if projection is not None and not isinstance(projection, dict):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Projection must be a dictionary or None.",
+                detail=f"Projection must be a dictionary or None. Received {projection}",
             )
         if not isinstance(limit, int) or limit < 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Limit must be a non-negative integer.",
+                detail=f"Limit must be a non-negative integer. Received {limit}",
             )
         try:
             cursor = self.collection.find(filters, projection).limit(limit)
@@ -206,7 +233,7 @@ class CRUD:
         except PyMongoError as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Database error: {str(e)}",
+                detail=f"Database error trying to process filters {filters}: {str(e)}",
             )
 
     def find_one(self, filters: Dict = {}) -> Optional[Dict]:
@@ -221,7 +248,7 @@ class CRUD:
         except PyMongoError as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Database error: {str(e)}",
+                detail=f"Database error trying to process filters {filters}: {str(e)}",
             )
 
     def count(self, filters: Dict = {}) -> int:
@@ -233,17 +260,17 @@ class CRUD:
         if not isinstance(filters, dict):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Filters must be a dictionary.",
+                detail=f"Filters must be a dictionary. Received {filters}",
             )
         try:
             return self.collection.count_documents(filters)
         except PyMongoError as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Database error: {str(e)}",
+                detail=f"Database error trying to process filters {filters}: {str(e)}",
             )
 
-    def aggregate(self, pipeline: List[Dict]) -> List[Dict]:
+    def aggregate(self, pipeline: List[Dict]) -> List[Any]:
         """
         Perform an aggregation pipeline query.
         :param pipeline: The aggregation pipeline as a list of stages.
@@ -261,5 +288,5 @@ class CRUD:
         except PyMongoError as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Database error: {str(e)}",
+                detail=f"Database error trying to process pipeline {pipeline}: {str(e)}",
             )

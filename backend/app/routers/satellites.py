@@ -1,7 +1,4 @@
-from fastapi import (
-    status,
-    APIRouter,
-)
+from fastapi import status, APIRouter, HTTPException
 
 from app.models import satellite
 from app.db import SatellitesCRUD
@@ -21,19 +18,26 @@ def get_satellites(
     page: int = 1,
     search: str = "",
 ):
+    # Calculate the right amount of skipped pages based on input
     skip = (page - 1) * limit
     pipeline = [
         {
             "$match": {
                 "name": {"$regex": search, "$options": "i"},
-                # "user_id": str(current_user["_id"])
             }
         },
         {"$skip": skip},
         {"$limit": limit},
     ]
-    satellites = SatellitesCRUD.aggregate(pipeline)
 
+    # Run pipeline and get the satellites
+    try:
+        satellites = SatellitesCRUD.aggregate(pipeline)
+    except HTTPException as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=f"Error retrieving locations with pipeline {pipeline}: {e}",
+        )
     return {
         "status": "success",
         "results": len(satellites),
@@ -45,13 +49,13 @@ def get_satellites(
 @router.get(
     "/{satelliteId}",
     response_model=satellite.SatelliteResponse,
-    summary="Get satellite using Database ID",
+    summary="Get single satellite using Database ID",
 )
 def get_satellite(
     satelliteId: str,
 ):
+    # Try to get the required satelite. The CRUD function is managing the HttpExceptions
     result = SatellitesCRUD.read(satelliteId)
-    # new_satellite = SatellitesCRUD.read(str(result["_id"]))
 
     return {"status": "success", "satellite": objectid_to_str(result)}
 
@@ -65,7 +69,9 @@ def get_satellite(
 def create_satellite(
     payload: satellite.SatelliteSchema,
 ):
+    # Create a new Satellite ignoring all None properties. The CRUD function is managing the HttpExceptions
     result = SatellitesCRUD.create(payload.dict(exclude_none=True))
+    # Try to read the newly created satellite to confirm it was created. The CRUD function is managing the HttpExceptions
     new_satellite = SatellitesCRUD.read(str(result["_id"]))
 
     return {"status": "success", "satellite": objectid_to_str(new_satellite)}
@@ -79,6 +85,7 @@ def create_satellite(
 def delete_satellite(
     satelliteId: str,
 ):
+    # Deletes a satellite based on an ID. The CRUD function is managing the HttpExceptions
     success, result = SatellitesCRUD.delete(satelliteId)
 
     return {"status": "success", "satellite": objectid_to_str(result)}

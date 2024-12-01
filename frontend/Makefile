@@ -1,21 +1,25 @@
-.PHONY : build-gcp build-gcp-init build run test deploy-gcp-run
+.PHONY : build-gcp build-gcp-init build build-container run-dev run-prod deploy-gcp-run
 
 # Builds a docker container based on the Dockerfile
-build:
+build-container:
 	echo "Building..."
 	sudo docker build . -t inter-maps-frontend:latest
 
-# Runs the application locally using port 8000 and the local .env file
-run:
-	echo "Running..."
+# Runs the application locally in dev mode using port 3000 and the local .env file
+run-dev:
+	echo "Running Dev..."
 	npm run dev
 
-# Runs all tests under the tests/ folder
-# -pytest makes sure the execution is not interrupted if a test fails
-test:
-	echo "Testing..."
-	-pytest -s -p no:warnings tests/
-	
+# Builds the application for production
+build:
+	echo "Building..."
+	npm run build
+
+# Runs the application locally in prod mode using port 3000 and the local .env file
+run-prod: build
+	echo "Running Prod..."
+	npm run start
+
 # Initialize gcloud for deployment. Normally this is only needed to be done once. 
 # You can perform this initialization manually on the browser but it is much faster to script it and reuse it.
 build-gcp-init:

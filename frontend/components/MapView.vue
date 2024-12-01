@@ -3,6 +3,25 @@
   <div class="absolute bg-white rounded-lg shadow-md px-2 py-2 text-sm text-gray-800 border border-gray-200 " ref="popupContainer">
     <p>{{ popupContent }}</p>
   </div>
+
+  <div class="absolute left-4 bottom-16 transform flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg p-4 w-80 border-b border-slate-200">
+      <ul class="max-h-40 mt-4 overflow-y-auto">
+            <li
+              v-for="location in locations"
+              class="flex justify-between items-center py-1 px-2 mb-2 mr-2 rounded-md"
+            >
+              <span class="text-gray-700">
+                Timestamp: {{new Date(location.timestamp).toLocaleString()}}
+                Velocity: {{location.velocity}}
+                Altitude: {{location.altitude}}
+                Visibility: {{location.visibility}}
+              </span>
+            </li>
+          </ul>
+    </div>
+  </div>
+
 </template>
 
 <script setup lang="ts">
@@ -25,19 +44,24 @@ const config = useRuntimeConfig();
 // Popup and coordinates
 const popupContainer = useState('popupContainer', () => null)
 const popupContent = useState('popupContent', () => "Loading...")
-// const latitude = ref(0);
 const latitude = useState('latitude', () => 0);
 const longitude = useState('longitude', () => 0);
 const timestamp = useState('timestamp', () => 0);
-fetchLocation(latitude, longitude, timestamp);
 
-// Track whether it's the first update
+// Async Composable to load the coordinates and timestamp from the backend endpoint of the assignment
+fetchIssLocation(latitude, longitude, timestamp);
+
+// Async Composable to load the last location fully. Could be merged with the above but I separated to make sure I use the endpoint that the assignment asked for
+const locations = useState('locations', () => []);
+fetchSatLocations('25544', 1, locations);
+
+// Track whether it's the first update. This is used to move the view at the marker position on the first load
 let firstLoad = true;
 
-// Fetch location initially and then every 20 seconds
 onMounted(() => {
+// Fetch location initially and then every 20 seconds
   setInterval(() => {
-    fetchLocation(latitude, longitude, timestamp);
+    fetchIssLocation(latitude, longitude, timestamp);
   }, 20000);
 
   // Create map view
@@ -103,12 +127,13 @@ onMounted(() => {
 
     // Animate the map to the new center on first load
     if (firstLoad && latitude.value !== 0 && longitude.value !== 0) {
+      // Delay animation to allow the marker to render first
       setTimeout(() => {
       view.animate({
             center: fromLonLat([longitude.value, latitude.value]),
-            duration: 400, // 1-second animation
+            duration: 400, // 400ms animation
           });
-        }, 0); // Delay animation to allow the marker to render first
+        }, 0);
       firstLoad = false;
     }
   });
@@ -133,9 +158,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Ensure map container occupies full height */
-#map {
-  height: 100%;
-  margin: 0;
-}
+
 </style>

@@ -10,6 +10,7 @@ from app.db import SatellitesCRUD, LocationsCRUD
 from app.utils.model_utils import objectid_to_str
 from app.config import app_config
 from app.utils.model_utils import objectid_to_str
+from app.components.location import LocationComponent
 
 router = APIRouter()
 
@@ -31,55 +32,32 @@ def iss_sun():
 
     # Get all locations of the ISS sorted by ascending order
     pipeline = [
-        # {"$match": {"sat_id": iss["sat_id"], "visibility": "daylight"}},
         {"$match": {"sat_id": iss["sat_id"]}},
         {"$sort": {"timestamp": 1}},  # 1 for ascending order (oldest to newest)
     ]
-    locations = LocationsCRUD.aggregate(pipeline)
-
-    # Prepare the return message with no daylight windows
-    return_dict = {
-        "sat_id": iss["sat_id"],
-        "results": 0,
-        "windows": [],
-    }
+    try:
+        locations = LocationsCRUD.aggregate(pipeline)
+    except HTTPException as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=f"Error retrieving locations for {iss}: {e}",
+        )
 
     # The windows List will store or time windows of "daylight"
-    windows = []
+    locationComponent = LocationComponent()
+    try:
+        windows = locationComponent.get_daylight_windows(locations)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error calculating daylight windows for {iss}: {e}",
+        )
 
-    # If any locations found
-    if locations:
-        # The window dictionary will store one daylight window with it's start and end time
-        window = {}
-        # Go through all locations
-        for location in locations:
-            # If it is daylight and the window start is undefined (new window) save it
-            if location["visibility"] == "daylight" and window.get("start") is None:
-                window["start"] = datetime.fromtimestamp(
-                    location["timestamp"], tz=timezone.utc
-                )
-            # Else if it is eclipsed and there is alread a window open, then close the window with the timestamp of the eclipse
-            elif (
-                location["visibility"] == "eclipsed" and window.get("start") is not None
-            ):
-                window["end"] = datetime.fromtimestamp(
-                    location["timestamp"], tz=timezone.utc
-                )
-                # Add the closed window to the list and reset it
-                windows.append(window.copy())
-                window = {}
-        # If there is still an open window after going through all locations (last location still in daylight), then close it with the last known timestamp
-        if window.get("start") is not None:
-            window["end"] = datetime.fromtimestamp(
-                locations[-1]["timestamp"], tz=timezone.utc
-            )
-            windows.append(window.copy())
-            window = {}
-
-        # Update the return message with the found windows their number. If none found, windows List will be empty
-        return_dict["windows"] = windows
-        return_dict["results"] = len(windows)
-    return return_dict
+    return {
+        "sat_id": iss["sat_id"],
+        "results": len(windows),
+        "windows": windows,
+    }
 
 
 # Get the last known location of the iss. We are capturing the location of the ISS with the Background task at the maximum frequency (20s).
@@ -104,14 +82,19 @@ def iss_loc():
         {"$sort": {"timestamp": -1}},  # -1 for descending order (newest to oldest),
         {"$limit": 1},  # Setting limit to 1 optimizes performance for the search
     ]
-    # Aggregate() returns a List
-    locations = LocationsCRUD.aggregate(pipeline)
-
-    # Prepare the return message with no daylight windows
+    try:
+        # Aggregate() returns a List
+        locations = LocationsCRUD.aggregate(pipeline)
+    except HTTPException as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=f"Error retrieving last location for {iss}: {e}",
+        )
+    # Prepare the return message
     return_dict = {
         "sat_id": iss["sat_id"],
     }
-    # If there is an element in the list,update the return message
+    # If there is an element in the list, update the return message
     if locations:
         return_dict["latitude"] = locations[0]["latitude"]
         return_dict["longitude"] = locations[0]["longitude"]

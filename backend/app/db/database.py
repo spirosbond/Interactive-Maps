@@ -7,13 +7,28 @@ from typing import Optional
 
 
 class MongoDB:
-    def __init__(self, url, db_name):
+    """
+    This class is used to manage the connection with the MongoDB.
+    """
+
+    def __init__(self, url: str, db_name: str):
+        """
+        Constructs a new instance.
+
+        :param      url:      the mongodb url
+        :type       url:      string
+        :param      db_name:  The database name
+        :type       db_name:  str
+        """
         self._client: Optional[MongoClient] = None
         self.database: Optional[Database] = None
         self.url = url
         self.db_name = db_name
 
     def connect(self):
+        """
+        Initialize the connection client and create the database
+        """
         print(f"Trying to connect to {self.db_name}")
         self._client = MongoClient(self.url, server_api=ServerApi("1"))
 
@@ -21,7 +36,14 @@ class MongoDB:
         print("Connected to MongoDB")
 
     def get_collection(self, collection_name: str) -> Collection:
-        """Retrieve a specific collection from the database."""
+        """
+        Retrieve a specific collection from the database.
+
+        :param      collection_name:  The collection name
+        :type       collection_name:  str
+
+        :returns:   The collection.
+        :rtype:     Collection"""
         if self.database is None:
             raise Exception(
                 "Database connection not established. Call `connect()` first."
@@ -29,7 +51,9 @@ class MongoDB:
         return self.database[collection_name]
 
     def drop(self):
-        """Drop the database"""
+        """
+        Drops the database
+        """
         if self.database is None:
             raise Exception(
                 "Database connection not established. Call `connect()` first."
@@ -38,7 +62,9 @@ class MongoDB:
             self._client.drop_database(self.database)
 
     def close(self):
-        """Close the database connection."""
+        """
+        Closes the database connection.
+        """
         if self._client:
             self._client.close()
             print("MongoDB connection closed.")

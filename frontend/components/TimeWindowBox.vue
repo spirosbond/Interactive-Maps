@@ -5,13 +5,13 @@
         <span>Daylight Windows</span>
         <img
           :src="activeAccordion === 1 ? minusIcon : plusIcon"
-          id="icon-1"
           alt="Accordion Icon"
           class="text-slate-800 transition-transform duration-300 size-4"
         />
       </button>
       <div
-        id="content-1"
+        id="content"
+        ref="content"
         class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out"
       >
         <div class="pb-5 text-sm text-slate-500">
@@ -43,11 +43,15 @@ import plusIcon from "~/assets/img/plus.svg";
 import minusIcon from "~/assets/img/minus.svg";
 
 // State for managing which accordion is active
-const activeAccordion = ref(null);
+const activeAccordion = useState("activeAccordion",() => null);
+// Accordion content. To be used in the toggleAccordion() function to change the DOM
+const content = ref(null);
 
 // Time windows data
 const timeWindows = useState("timeWindows", () => "Loading...");
+// Asyc Composable that uses the backend api to pull all daylight windows
 fetchDaylightWindows(timeWindows);
+// Formatting dictionary for showing the windows nicely
 const timeFormat = {
   day: "2-digit",
   month: "short",
@@ -57,14 +61,15 @@ const timeFormat = {
   hour12: false,
 };
 
+// Function called when the accordion is clicked. Manages Opening/Closing
 const toggleAccordion = (index) => {
-  const content = document.getElementById(`content-${index}`);
   if (activeAccordion.value === index) {
     activeAccordion.value = null; // Close accordion
-    content.style.maxHeight = "0";
+    content.value.style.maxHeight = "0";
   } else {
     activeAccordion.value = index; // Open accordion
-    content.style.maxHeight = content.scrollHeight + "px";
+    content.value.style.maxHeight = content.value.scrollHeight + "px";
   }
 };
+
 </script>
