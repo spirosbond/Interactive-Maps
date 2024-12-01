@@ -13,7 +13,6 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
         mapboxToken: process.env.NUXT_MAPBOX_TOKEN,
-        // mapboxToken: 'pk.eyJ1IjoiYmlnYXBwbGVkZXYiLCJhIjoiY200NDZtOWczMGd4ajJsc2Y1eTBsanh4MiJ9.b1wTh0FQgbrAdHmDnu5hkA',
         apiBaseUrl: process.env.NUXT_API_BASE_URL
     },
   },
