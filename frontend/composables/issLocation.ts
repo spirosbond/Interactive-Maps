@@ -11,21 +11,20 @@ export async function fetchIssLocation(latitude, longitude, timestamp) {
     const config = useRuntimeConfig();
 
   try {
-    const { data, error } = await useFetch(`${config.public.apiBaseUrl}iss/position`);
+    // Using fetch instead of useState because this Composable runs with an interval on the client
+    const data = await $fetch(`${config.public.apiBaseUrl}iss/position`);
 
-    if (error.value) {
-      console.error('Failed to fetch ISS position:', error.value);
-    }
-    latitude.value = data.value.latitude
-    longitude.value = data.value.longitude
-    timestamp.value = data.value.timestamp
+    latitude.value = data.latitude
+    longitude.value = data.longitude
+    timestamp.value = data.timestamp 
+    
     
   } catch (e) {
     console.error('Error fetching ISS position:', e);
   }
-  return {  'latitude': latitude,
-            'longitude': longitude,
-            'timestamp': timestamp}
+  return {  latitude,
+            longitude,
+            timestamp}
 
   
 };

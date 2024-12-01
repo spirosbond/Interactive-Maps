@@ -48,8 +48,7 @@ const latitude = useState('latitude', () => 0);
 const longitude = useState('longitude', () => 0);
 const timestamp = useState('timestamp', () => 0);
 
-// Async Composable to load the coordinates and timestamp from the backend endpoint of the assignment
-fetchIssLocation(latitude, longitude, timestamp);
+
 
 // Async Composable to load the last location fully. Could be merged with the above but I separated to make sure I use the endpoint that the assignment asked for
 const locations = useState('locations', () => []);
@@ -59,7 +58,9 @@ fetchSatLocations('25544', 1, locations);
 let firstLoad = true;
 
 onMounted(() => {
-// Fetch location initially and then every 20 seconds
+    // Async Composable to load the coordinates and timestamp from the backend endpoint of the assignment
+    fetchIssLocation(latitude, longitude, timestamp);
+    // Fetch location initially and then every 20 seconds
   setInterval(() => {
     fetchIssLocation(latitude, longitude, timestamp);
   }, 20000);
