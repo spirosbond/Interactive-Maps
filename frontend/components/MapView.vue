@@ -1,27 +1,33 @@
 <template>
   <div id="map" class="flex-1 h-full"></div>
-  <div class="absolute bg-white rounded-lg shadow-md px-2 py-2 text-sm text-gray-800 border border-gray-200 " ref="popupContainer">
+  <div
+    class="absolute bg-white rounded-lg shadow-md px-2 py-2 text-sm text-gray-800 border border-gray-200"
+    ref="popupContainer"
+  >
     <p>{{ popupContent }}</p>
   </div>
 
-  <div class="absolute left-4 bottom-16 transform flex justify-center items-center">
-    <div class="bg-white rounded-lg shadow-lg p-4 w-80 border-b border-slate-200">
+  <div
+    class="absolute left-4 bottom-16 transform flex justify-center items-center"
+  >
+    <div
+      class="bg-white rounded-lg shadow-lg p-4 w-80 border-b border-slate-200"
+    >
       <ul class="max-h-40 mt-4 overflow-y-auto">
-            <li
-              v-for="location in locations"
-              class="flex justify-between items-center py-1 px-2 mb-2 mr-2 rounded-md"
-            >
-              <span class="text-gray-700">
-                Timestamp: {{new Date(location.timestamp).toLocaleString()}}
-                Velocity: {{location.velocity}}
-                Altitude: {{location.altitude}}
-                Visibility: {{location.visibility}}
-              </span>
-            </li>
-          </ul>
+        <li
+          v-for="location in locations"
+          class="flex justify-between items-center py-1 px-2 mb-2 mr-2 rounded-md"
+        >
+          <span class="text-gray-700">
+            Timestamp:
+            {{new Date(location.timestamp).toLocaleString()}} Velocity:
+            {{location.velocity}} Altitude: {{location.altitude}} Visibility:
+            {{location.visibility}}
+          </span>
+        </li>
+      </ul>
     </div>
   </div>
-
 </template>
 
 <script setup lang="ts">
@@ -158,6 +164,4 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -1,7 +1,12 @@
 <template>
   <div class="flex justify-center items-center">
-    <div class="bg-white rounded-lg shadow-lg p-4 w-80 border-b border-slate-200">
-      <button @click="toggleAccordion(1)" class="w-full flex justify-between items-center py-2 text-slate-800">
+    <div
+      class="bg-white rounded-lg shadow-lg p-4 w-80 border-b border-slate-200"
+    >
+      <button
+        @click="toggleAccordion(1)"
+        class="w-full flex justify-between items-center py-2 text-slate-800"
+      >
         <span>Daylight Windows</span>
         <img
           :src="activeAccordion === 1 ? minusIcon : plusIcon"
@@ -71,5 +76,4 @@ const toggleAccordion = (index) => {
     content.value.style.maxHeight = content.value.scrollHeight + "px";
   }
 };
-
 </script>

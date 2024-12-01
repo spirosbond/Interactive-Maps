@@ -10,9 +10,12 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
+
   runtimeConfig: {
     public: {
         apiBaseUrl: process.env.NUXT_API_BASE_URL
     },
   },
+
+  modules: ['@nuxt/ui'],
 })

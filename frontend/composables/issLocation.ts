@@ -8,7 +8,9 @@
 // @return     Dictionary:  The shared states with the values from the results of the API call
 //
 export async function fetchIssLocation(latitude, longitude, timestamp) {
-    const config = useRuntimeConfig();
+  const config = useRuntimeConfig();
+  const toast = useToast()
+
 
   try {
     // Using fetch instead of useState because this Composable runs with an interval on the client
@@ -21,6 +23,18 @@ export async function fetchIssLocation(latitude, longitude, timestamp) {
     
   } catch (e) {
     console.error('Error fetching ISS position:', e);
+    toast.add({
+        id: 'fetch_error',
+        color: "red",
+        title: 'Error Fetching ISS location!',
+        timeout: 5000,
+        actions: [{
+          label: 'Reload Page',
+          click: () => {
+            reloadNuxtApp({"ttl":1})
+          }
+        }]
+    })
   }
   return {  latitude,
             longitude,
