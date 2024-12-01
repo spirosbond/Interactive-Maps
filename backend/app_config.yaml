@@ -1,0 +1,21 @@
+app-config:
+  title: "Interactive Maps - Aerospacelab"
+  description: "Back-end for Interactive Maps application"
+  summary: "Technical Assignment"
+  version: "0.1-ALPHA"
+  terms_of_service: "#"
+  token_expiry_minutes: 43800 # 1-month
+  iss_id: 25544
+  # iss_id: 10
+  # iss_id: 98374983475
+  apis:
+    sat_loc:
+      url: "https://api.wheretheiss.at/v1/satellites/"
+      freq: 5
+  services:
+    pull_position:
+      enabled: true
+      entrypoint: "pull_position_task.main"
+    dummy_task:
+      enabled: false
+      entrypoint: "dummy.main"

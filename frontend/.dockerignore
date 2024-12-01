@@ -1,0 +1,9 @@
+__pycache__/
+.git
+.gitignore
+.gcloudignore
+*.directory
+**/*.directory
+.nuxt/
+.output/
+node_modules/

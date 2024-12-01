@@ -1,0 +1,35 @@
+services:
+  backend:
+    image: inter-maps-backend:latest
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL} # This is from the docker-compose .env file and this URL overwrittes the URL GCP needs for Local connection to Atlas
+      # DATABASE_URL: ${DATABASE_URL_LOCAL} # This is from the docker-compose .env file and this URL overwrittes the URL GCP needs for Local connection to local container
+    # command: uvicorn src.main:fastapi_app --host 0.0.0.0 --port 8080
+    ports:
+      - 8080:8080
+    # depends_on:
+      # - mongo
+      # - worker
+      # - flower
+    networks:
+      net:
+        ipv4_address: 172.28.0.2
+  frontend:
+    image: inter-maps-frontend:latest
+    build: ./frontend
+    container_name: frontend:latest
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    networks:
+      net:
+        ipv4_address: 172.28.0.3
+
+networks:
+  net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16

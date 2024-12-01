@@ -1,0 +1,7 @@
+__pycache__/
+*.env
+venv/
+*.directory
+**/*.directory
+*.sublime-*
+pyrightconfig.json

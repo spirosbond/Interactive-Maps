@@ -1,0 +1,7 @@
+fastapi[all]
+pymongo
+pydantic-settings
+pytest
+pytest-asyncio
+APScheduler
+requests
