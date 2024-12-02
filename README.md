@@ -1,6 +1,10 @@
 # Full Stack Application - Interactive Maps with FastAPI (Backend) and Nuxt (Frontend)
 
 This README provides instructions for setting up, running, and deploying a full stack application called Interactive Maps using FastAPI for the backend and Nuxt for the frontend. You can run the application using Docker Compose or directly using Makefile commands.
+You can visit the current deployments here:
+- Backend: https://inter-maps-backend-974996545024.europe-west1.run.app/docs#
+- Frontend: https://inter-maps-frontend-974996545024.europe-west1.run.app/
+
 ![](readme_assets/Architecture-Rev1.png "Architecture")
 
 ## Prerequisites
