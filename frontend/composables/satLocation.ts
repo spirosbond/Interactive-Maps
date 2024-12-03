@@ -6,9 +6,10 @@
 // @param      locations   The Shared State to be used to return the locations
 // @return     locations:  The Shared State with the results of the API call
 //
-export async function fetchSatLocations(sat_id, n, locations) {
+export async function fetchSatLocations(sat_id, n) {
   const config = useRuntimeConfig();
   const toast = useToast()
+  const locations = useState('locations', () => []);
 
   try {
     const { data, error } = await useFetch(`${config.public.apiBaseUrl}location/by_sat_id/${sat_id}?limit=${n}`);

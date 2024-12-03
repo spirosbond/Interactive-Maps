@@ -48,14 +48,13 @@ import plusIcon from "~/assets/img/plus.svg";
 import minusIcon from "~/assets/img/minus.svg";
 
 // State for managing which accordion is active
-const activeAccordion = useState("activeAccordion",() => null);
+const activeAccordion = ref(false);
 // Accordion content. To be used in the toggleAccordion() function to change the DOM
 const content = ref(null);
 
-// Time windows data
-const timeWindows = useState("timeWindows", () => "Loading...");
-// Asyc Composable that uses the backend api to pull all daylight windows
-fetchDaylightWindows(timeWindows);
+// Time windows data. Uses Composable that uses the backend api to pull all daylight windows
+const timeWindows = useState("timeWindows", () => fetchDaylightWindows());
+
 // Formatting dictionary for showing the windows nicely
 const timeFormat = {
   day: "2-digit",

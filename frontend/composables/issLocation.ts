@@ -7,13 +7,15 @@
 // @param      timestamp   The Shared State to be used to return the timestamp
 // @return     Dictionary:  The shared states with the values from the results of the API call
 //
-export async function fetchIssLocation(latitude, longitude, timestamp) {
+export async function fetchIssLocation() {
   const config = useRuntimeConfig();
   const toast = useToast()
-
+  const latitude = useState('latitude', () => 0);
+  const longitude = useState('longitude', () => 0);
+  const timestamp = useState('timestamp', () => 0);
 
   try {
-    // Using fetch instead of useState because this Composable runs with an interval on the client
+    // Using fetch instead of useFetch because this Composable runs with an interval on the client
     const data = await $fetch(`${config.public.apiBaseUrl}iss/position`);
 
     latitude.value = data.latitude

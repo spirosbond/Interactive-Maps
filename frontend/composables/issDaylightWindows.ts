@@ -2,12 +2,13 @@
 //
 // Composable to fetch ISS windows under the sun
 //
-// @param      windows:  The Shared State to be used to return the windows from the API
-// @return     windows:  The daylight windows.
+// @param      timeWindows:  The Shared State to be used to return the windows from the API
+// @return     timeWindows:  The daylight windows.
 //
-export async function fetchDaylightWindows(windows) {
+export async function fetchDaylightWindows() {
   const config = useRuntimeConfig();
   const toast = useToast()
+  const timeWindows = useState("timeWindows", () => "Loading...");
 
   try {
     const { data, error } = await useFetch(`${config.public.apiBaseUrl}iss/sun`);
@@ -15,7 +16,7 @@ export async function fetchDaylightWindows(windows) {
     if (error.value) {
       console.error('Failed to fetch ISS Daylight Windows:', error.value);
     }
-    windows.value = data.value.windows
+    timeWindows.value = data.value.windows
     
   } catch (e) {
     console.error('Error fetching ISS Daylight Windows:', e);
@@ -32,7 +33,7 @@ export async function fetchDaylightWindows(windows) {
         }]
     })
   }
-  return windows
+  return timeWindows
 
   
 };

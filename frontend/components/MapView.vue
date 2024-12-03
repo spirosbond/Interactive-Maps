@@ -54,21 +54,18 @@ const latitude = useState('latitude', () => 0);
 const longitude = useState('longitude', () => 0);
 const timestamp = useState('timestamp', () => 0);
 
-
-
 // Async Composable to load the last location fully. Could be merged with the above but I separated to make sure I use the endpoint that the assignment asked for
-const locations = useState('locations', () => []);
-fetchSatLocations('25544', 1, locations);
+const locations = useState('locations', () => fetchSatLocations('25544', 1));
 
 // Track whether it's the first update. This is used to move the view at the marker position on the first load
 let firstLoad = true;
 
 onMounted(() => {
     // Async Composable to load the coordinates and timestamp from the backend endpoint of the assignment
-    fetchIssLocation(latitude, longitude, timestamp);
+    fetchIssLocation();
     // Fetch location initially and then every 20 seconds
   setInterval(() => {
-    fetchIssLocation(latitude, longitude, timestamp);
+    fetchIssLocation();
   }, 20000);
 
   // Create map view
