@@ -16,13 +16,19 @@
       <ul class="max-h-40 mt-4 overflow-y-auto">
         <li
           v-for="location in locations"
-          class="flex justify-between items-center py-1 px-2 mb-2 mr-2 rounded-md"
+          class="flex flex-col justify-start items-start py-1 px-1 mb-2 mr-2 rounded-md"
         >
           <span class="text-gray-700">
-            Timestamp:
-            {{new Date(location.timestamp).toLocaleString()}} Velocity:
-            {{location.velocity}} Altitude: {{location.altitude}} Visibility:
-            {{location.visibility}}
+            Timestamp: {{new Date(location.timestamp).toLocaleString()}} 
+        </span>
+        <span class="text-gray-700">
+            Velocity: {{location.velocity}} 
+        </span>
+        <span class="text-gray-700">
+            Altitude: {{location.altitude}} 
+          </span>
+        <span class="text-gray-700">
+            Visibility: {{location.visibility}}
           </span>
         </li>
       </ul>
