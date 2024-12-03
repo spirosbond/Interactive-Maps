@@ -48,7 +48,7 @@ import plusIcon from "~/assets/img/plus.svg";
 import minusIcon from "~/assets/img/minus.svg";
 
 // State for managing which accordion is active
-const activeAccordion = ref(false);
+const activeAccordion = ref(0);
 // Accordion content. To be used in the toggleAccordion() function to change the DOM
 const content = ref(null);
 
